@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>H5 | 和风天气</title>
+    <!-- icon引入和风天气的图标作为页面标题边上的图标 -->
+    <link rel="icon" href="https://cdn.qweather.com/img/plugin/190516/icon/logo/favicon.ico?v=20201022"
+        type="image/x-icon">
+    <!-- 定期刷新页面，这里是100秒刷新一次（注释掉了，有需要的自行开启） -->
+    <!-- <meta http-equiv="refresh" content="100"> -->
+    <!-- 引入和风天气API -->
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.14&key=929d2ddf024f6038d2b2e9e878ea91a9">
+    </script>
+    <!-- 引入图标等的js文件（官方的） -->
+    <script src="../js/app.js"></script>
+    <link rel="stylesheet" href="../css/app.css">
+    <!-- 引入汉字转拼音的js文件 -->
+    <script src="../js/Convert_Pinyin.js"></script>
+    <!-- 引入百度地图API -->
+    <script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=7a6QKaIilZftIMmKGAFLG7QT1GLfIncg">
+    </script>
+</head>
+
+<body>
+    <h1>正在定位……</h1>
+    <div class="box" id="mybox"></div>
+    <div class="home" id="mycons"></div>
+    <div id="he-plugin-h5"></div>
+    <!-- 在js中创建元素并引入到这里面 -->
+    <script>
+        WIDGET = {}
+    </script>
+</body>
+
+<script>
+    var h1 = document.querySelector('h1');
+    var mybox = document.querySelector('#mybox');
+    var mycons = document.querySelector('#mycons');
+    // 运行 getLocation() 函数
+    getLocation();
+    function getLocation() {
+        // 百度地图的初始化
+        var geolocation = new BMap.Geolocation();
+        geolocation.getCurrentPosition(function (e) {
+            if (this.getStatus() == BMAP_STATUS_SUCCESS) {
+                h1.style.display = 'none';
+                // 百度 geolocation 的经纬度属性不同，此处是 point.lat 而不是 coords.latitude
+                var city = e.address.city.substr(0, e.address.city.length - 1);
+                var city_PY = pinyin.getFullChars(city).toString().toLowerCase();
+                console.log(city_PY);
+                var url = "https://free-api.heweather.net/s6/weather/now?location=" + city_PY +
+                    "&key=be65b9f64b674e1285d3e5e092c475d0"
+                fetch
+                    (url, {
+                        method: "get",
+                        mode: "cors"
+                    })
+                    .then(function (data) {
+                        return data.json()
+                    })
+                    .then(function (data) {
+
+                        mybox.innerHTML = `
+                            <canvas id=icon1 width="100" height="100"></canvas>
+                            <p class="area" id="myarea">${data.HeWeather6[0].basic.location}</p>
+                            <p>
+                                <span>${data.HeWeather6[0].now.cond_txt}</span>
+                                <span>${data.HeWeather6[0].now.tmp}℃(实时)</span>
+                            </p>
+                        `
+                        changeWeather(data.HeWeather6[0].now.cond_code, "icon1")
+                    })
+
+                var url2 =
+                    "https://free-api.heweather.net/s6/weather/forecast?location=" + city_PY +
+                    "&key=be65b9f64b674e1285d3e5e092c475d0"
+                fetch
+                    (url2, {
+                        method: "get",
+                        mode: "cors"
+                    })
+                    .then(function (data) {
+                        return data.json()
+                    })
+                    .then(function (data) {
+                        mycons.innerHTML = `
+                            <div class="line">
+                                <div class="icon">
+                                    <p class="day">${data.HeWeather6[0].daily_forecast[1].date}</p>
+                                    <canvas id="icon2" width="60" height="60"></canvas>
+                                    <p>${data.HeWeather6[0].daily_forecast[1].tmp_min}/${data.HeWeather6[0].daily_forecast[0].tmp_max}℃</p>
+                                </div>
+                                <div class="icon">
+                                    <p class="day">${data.HeWeather6[0].daily_forecast[2].date}</p>
+                                    <canvas id="icon3" width="60" height="60"></canvas>
+                                    <p>${data.HeWeather6[0].daily_forecast[2].tmp_min}/${data.HeWeather6[0].daily_forecast[0].tmp_max}℃</p>
+                                </div>
+                                <div class="icon">
+                                    <p class="day">${data.HeWeather6[0].daily_forecast[3].date}</p>
+                                    <canvas id="icon4" width="60" height="60"></canvas>
+                                    <p>${data.HeWeather6[0].daily_forecast[3].tmp_min}/${data.HeWeather6[0].daily_forecast[0].tmp_max}℃</p>
+                                </div>
+                            </div>
+                            <div class="line">
+                                <div class="icon">
+                                    <p class="day">${data.HeWeather6[0].daily_forecast[4].date}</p>
+                                    <canvas id="icon5" width="60" height="60"></canvas>
+                                    <p>${data.HeWeather6[0].daily_forecast[4].tmp_min}/${data.HeWeather6[0].daily_forecast[0].tmp_max}℃</p>
+                                </div>
+                                <div class="icon">
+                                    <p class="day">${data.HeWeather6[0].daily_forecast[5].date}</p>
+                                    <canvas id="icon6" width="60" height="60"></canvas>
+                                    <p>${data.HeWeather6[0].daily_forecast[5].tmp_min}/${data.HeWeather6[0].daily_forecast[0].tmp_max}℃</p>
+                                </div>
+                                <div class="icon">
+                                    <p class="day">${data.HeWeather6[0].daily_forecast[6].date}</p>
+                                    <canvas id="icon7" width="60" height="60"></canvas>
+                                    <p>${data.HeWeather6[0].daily_forecast[6].tmp_min}/${data.HeWeather6[0].daily_forecast[0].tmp_max}℃</p>
+                                </div>
+                            </div>
+                        `
+                        changeWeather(data.HeWeather6[0].daily_forecast[1].cond_code_d, "icon2")
+                        changeWeather(data.HeWeather6[0].daily_forecast[2].cond_code_d, "icon3")
+                        changeWeather(data.HeWeather6[0].daily_forecast[3].cond_code_d, "icon4")
+                        changeWeather(data.HeWeather6[0].daily_forecast[4].cond_code_d, "icon5")
+                        changeWeather(data.HeWeather6[0].daily_forecast[5].cond_code_d, "icon6")
+                        changeWeather(data.HeWeather6[0].daily_forecast[6].cond_code_d, "icon7")
+                    })
+
+                function changeWeather(code, box) {
+                    let skycons = new Skycons({
+                        "color": "white"
+                    });
+                    if (code == 100) {
+                        skycons.add(box, Skycons.CLEAR_DAY);
+                        skycons.play();
+                    } else if (code >= 101 && code <= 104) {
+                        skycons.add(box, Skycons.CLOUDY);
+                        skycons.play();
+                    } else if (code >= 300 && code <= 399) {
+                        skycons.add(box, Skycons.RAIN);
+                        skycons.play();
+                    } else if (code >= 404 && code <= 406) {
+                        skycons.add(box, Skycons.SLEET);
+                        skycons.play();
+                    } else if (code >= 400 && code <= 403 || code >= 407 && code <= 499) {
+                        skycons.add(box, Skycons.SNOW);
+                        skycons.play();
+                    } else if (code >= 200 && code <= 213) {
+                        skycons.add(box, Skycons.WIND);
+                        skycons.play();
+                    } else if (code >= 500) {
+                        skycons.add(box, Skycons.FOG);
+                        skycons.play();
+                    }
+                }
+            } else {
+                alert('无法定位，请刷新页面');
+            }
+        });
+    }
+</script>
+
+</html>
